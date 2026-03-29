@@ -14,15 +14,31 @@ This project implements:
 
 ## Dataset
 
+### CICIDS-2017 Dataset
+This project uses the **CICIDS-2017** (Canadian Institute for Cybersecurity Intrusion Detection Evaluation Dataset) dataset, which is one of the most comprehensive and realistic network intrusion detection datasets available. 
+
+**Dataset Details:**
+- **Source**: [Canadian Institute for Cybersecurity (CIC)](https://www.unb.ca/cic/)
+- **Collection Period**: 10 days (Monday to Friday, with multiple weeks of data)
+- **Total Samples**: 2.8 million traffic flows
+- **Features**: 87 network characteristics extracted from traffic flows
+- **Attack Types**: 5 types of attacks plus benign traffic
+
+### Traffic Classification
+
 The system classifies network traffic into 6 categories:
-- **Benign**: Normal traffic
+- **Benign**: Normal, non-malicious traffic
 - **DoS**: Denial of Service attacks
 - **DDoS**: Distributed Denial of Service attacks
-- **Probe**: Reconnaissance attacks
+- **Probe**: Reconnaissance/probing attacks
 - **R2L**: Remote to Local attacks
-- **U2R**: User to Root attacks
+- **U2R**: User to Root escalation attacks
 
-Each sample contains 87 network features extracted from traffic flows.
+Each sample contains 87 network features extracted from traffic flows, including:
+- Forward and backward packet information (count, size, rate)
+- Connection duration and timeout statistics
+- TCP flag counts and protocol flags
+- Flow entropy and length metrics
 
 ## Models Trained
 
@@ -355,6 +371,26 @@ print(f"Confidence: {result['confidence']:.2%}")
                   Make Predictions
                   Return Results
 ```
+
+## Dataset Citation
+
+This project uses the **CICIDS-2017** dataset for model training and evaluation. If you use this dataset in your research, please cite:
+
+```bibtex
+@article{cicids2017,
+  title={CIC-IDS2017: A Large-Scale Labelled Dataset of Internet of Things Network Traffic},
+  author={Sharafaldin, Iman and Habibi Lashkari, Arash and Ghorbani, Ali A.},
+  year={2017}
+}
+```
+
+**Dataset Download:**
+- Official source: [CIC @ UNB](https://www.unb.ca/cic/)
+- Alternative source: [Canadian Institute for Cybersecurity](https://www.unb.ca/cic/datasets/ids-2017.html)
+
+**Related Publications:**
+- Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization ([ResearchGate](https://www.researchgate.net/))
+- The CICIDS2017 dataset is widely used in network security and machine learning research
 
 ## License
 
