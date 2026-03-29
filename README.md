@@ -1,14 +1,16 @@
 # Network Intrusion Detection System (IDS)
 
-A machine learning-based Network Intrusion Detection System that classifies network traffic as benign or malicious attacks using multiple algorithms.
+A machine learning-based Network Intrusion Detection System that classifies network traffic as benign or malicious attacks. This project includes a complete ML pipeline with FastAPI backend and Streamlit web interface for interactive predictions.
 
 ## Project Overview
 
-This project implements a complete ML pipeline for intrusion detection:
-- **Data Preprocessing**: Clean and normalize network traffic data
-- **Model Training**: Train 4 different ML algorithms
-- **Evaluation**: Comprehensive model performance analysis
-- **Prediction**: Make predictions on new network traffic
+This project implements:
+- **Data Preprocessing**: Clean and normalize raw network traffic data from CSV files
+- **Model Training**: Train 4 different ML algorithms (Logistic Regression, Random Forest, SVM, Naive Bayes)
+- **Model Evaluation**: Comprehensive performance analysis with multiple metrics
+- **Inference Pipeline**: Make predictions on new network traffic
+- **Web API**: FastAPI REST endpoints for programmatic access
+- **Web UI**: Streamlit interface for interactive predictions and visualization
 
 ## Dataset
 
@@ -34,21 +36,25 @@ Each sample contains 87 network features extracted from traffic flows.
 ```
 intrusion-detection/
 ├── data/
-│   ├── raw/              # Original CSV files
-│   └── processed/        # Cleaned and normalized data
-├── models/               # Trained ML models (pickle files)
-├── notebooks/            # Jupyter notebooks
+│   ├── raw/                      # Original CSV files (10 days of data)
+│   └── processed/                # Clean, normalized data + preprocessing objects
+├── models/                       # Trained ML models (pickle format)
 ├── src/
-│   ├── data_preprocessing.py    # Data cleaning and normalization
-│   ├── train.py                 # Model training
-│   ├── evaluate.py              # Model evaluation and metrics
-│   ├── predict.py               # Prediction on new data
-│   ├── demo_preprocessing.py    # Demo: Show preprocessing steps
-│   └── demo_train.py            # Demo: Show training process
-├── requirements.txt      # Python dependencies
-├── README.md
-├── .gitignore
-└── LICENSE
+│   ├── data_preprocessing.py     # Clean, normalize, and prepare data
+│   ├── train.py                  # Train 4 ML models
+│   ├── evaluate.py               # Evaluate model performance
+│   ├── predict.py                # Make predictions on new data
+│   ├── demo_preprocessing.py     # Demo: 6-row preprocessing walkthrough
+│   └── demo_train.py             # Demo: Training with 50 sample rows
+├── app/
+│   ├── app.py                    # FastAPI backend with REST endpoints
+│   ├── streamlit_app.py          # Streamlit web interface
+│   └── README.md                 # Web application documentation
+├── notebooks/                    # Jupyter notebooks (optional)
+├── requirements.txt              # Python dependencies
+├── README.md                     # This file
+├── .gitignore                    # Git ignore rules
+└── LICENSE                       # MIT License
 ```
 
 ## Installation
@@ -223,11 +229,132 @@ evaluate.py → Model Metrics
 predict.py  → Predictions
 ```
 
+## Web Application
+
+The project includes a web application with both FastAPI backend and Streamlit frontend for interactive predictions and visualization.
+
+### Streamlit Pages
+- **Home** - System overview and information
+- **Single Prediction** - Make individual predictions (manual entry or demo sample)
+- **Batch Prediction** - Predict on multiple generated samples
+- **About** - Project details and technology stack
+
+### Quick Start - Run Web App
+
+**Terminal 1 - Start FastAPI Backend:**
+```bash
+cd app
+python3 -m uvicorn app:app --reload
+```
+API available at: http://localhost:8000 (docs at `/docs`)
+
+**Terminal 2 - Start Streamlit Frontend:**
+```bash
+cd app
+streamlit run streamlit_app.py
+```
+Web UI available at: http://localhost:8501
+
+### FastAPI Endpoints
+- `GET /health` - System health check
+- `POST /predict` - Single sample prediction
+- `POST /predict-batch` - Batch predictions
+- `GET /models/compare` - Model information
+- `GET /features/info` - Expected features info
+
 ## Dependencies
 
-- **pandas** - Data manipulation
-- **numpy** - Numerical computations
-- **scikit-learn** - ML algorithms, preprocessing, metrics
+**Core Libraries:**
+- `pandas` - Data manipulation and CSV handling
+- `numpy` - Numerical computations
+- `scikit-learn` - ML algorithms, preprocessing, metrics
+
+**Web Framework:**
+- `fastapi` - REST API backend
+- `uvicorn` - ASGI web server
+- `streamlit` - Interactive web UI
+- `plotly` - Data visualizations
+
+Install all dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+## Quick Usage Example
+
+```python
+from predict import IntrusionDetectionPredictor
+import pandas as pd
+
+# Initialize predictor
+predictor = IntrusionDetectionPredictor(
+    models_folder='../models',
+    scaler_path='../data/processed/friday_scaler.pkl',
+    encoder_path='../data/processed/friday_label_encoder.pkl'
+)
+
+# Load test data (87 features)
+X_test = pd.read_csv('../data/processed/friday_X.csv').values
+
+# Make prediction
+result = predictor.predict_single_sample(X_test[0])
+print(f"Prediction: {result['prediction']}")
+print(f"Confidence: {result['confidence']:.2%}")
+```
+
+## Troubleshooting
+
+### API Backend Issues
+- **"API Backend Unavailable"**: Make sure FastAPI is running on port 8000
+- **Model loading errors**: Check if models are in `models/` folder
+- **Missing preprocessing objects**: Check if files are in `data/processed/` folder
+
+### Feature Dimension Errors
+- Ensure your data has exactly 87 features
+- CSV files should have at least 87 columns (extra columns ignored)
+- Missing columns will cause prediction errors
+
+### Environment Issues
+- Install all dependencies: `pip install -r requirements.txt`
+- Create and activate virtual environment before installing
+- Ensure Python 3.10+ is installed
+
+### Port Already in Use
+- Change FastAPI port: `python3 -m uvicorn app:app --port 8001`
+- Change Streamlit port: `streamlit run streamlit_app.py --server.port 8502`
+
+## Performance Notes
+
+- Single predictions: ~100-200ms
+- Batch predictions: ~10-50ms per sample
+- CSV upload: Depends on file size (tested with 10,000+ rows)
+- All endpoints use the best-performing Random Forest model by default
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────┐
+│        Streamlit Frontend (Port 8501)               │
+│  - Interactive UI with 5 pages                      │
+│  - Real-time predictions and visualizations         │
+└────────────────┬────────────────────────────────────┘
+                 │ HTTP Requests
+                 ↓
+┌─────────────────────────────────────────────────────┐
+│       FastAPI Backend (Port 8000)                   │
+│  - REST API with detailed docs at /docs            │
+│  - Health checks and model info endpoints          │
+└────────┬──────────────────────────────┬─────────────┘
+         │                              │
+         ↓                              ↓
+    Load Models              Load Preprocessing Objects
+    (4 algorithms)           (Scaler + Encoder)
+         │                              │
+         └──────────────┬───────────────┘
+                        ↓
+                  Make Predictions
+                  Return Results
+```
 
 ## License
 
@@ -240,3 +367,13 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Author
 
 Created as part of a Network Intrusion Detection research project.
+
+## Citation
+
+If you use this project in your research, please cite:
+
+```
+Network Intrusion Detection System (IDS)
+Machine Learning-based classification of network traffic
+https://github.com/yourusername/intrusion-detection
+```
