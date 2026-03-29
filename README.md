@@ -44,8 +44,6 @@ intrusion-detection/
 │   ├── train.py                  # Train 4 ML models
 │   ├── evaluate.py               # Evaluate model performance
 │   ├── predict.py                # Make predictions on new data
-│   ├── demo_preprocessing.py     # Demo: 6-row preprocessing walkthrough
-│   └── demo_train.py             # Demo: Training with 50 sample rows
 ├── app/
 │   ├── app.py                    # FastAPI backend with REST endpoints
 │   ├── streamlit_app.py          # Streamlit web interface
