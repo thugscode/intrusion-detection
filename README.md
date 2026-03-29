@@ -61,7 +61,7 @@ intrusion-detection/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/intrusion-detection.git
+git clone https://github.com/thugscode/intrusion-detection.git
 cd intrusion-detection
 ```
 
@@ -366,6 +366,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Author
 
+**Shailesh Kumar Sharma**  
+Email: shaileshksharma12@gmail.com
+
 Created as part of a Network Intrusion Detection research project.
 
 ## Citation
@@ -375,5 +378,6 @@ If you use this project in your research, please cite:
 ```
 Network Intrusion Detection System (IDS)
 Machine Learning-based classification of network traffic
-https://github.com/yourusername/intrusion-detection
+Author: Shailesh Kumar Sharma
+Email: shaileshksharma12@gmail.com
 ```
