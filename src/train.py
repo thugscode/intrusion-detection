@@ -170,80 +170,12 @@ class IntrusionDetectionTrainer:
         print(f"   ✓ Training complete")
     
     
-    def evaluate_models(self, X_test, y_test):
-        """
-        Evaluate all trained models on test data.
-        
-        Metrics:
-        - Accuracy: Overall correctness (correct predictions / total predictions)
-        - Precision: How many detected attacks were actually attacks
-        - Recall: How many actual attacks were detected
-        - F1-Score: Balance between Precision and Recall
-        
-        Args:
-            X_test (array): Test features
-            y_test (array): Test labels
-        """
-        print(f"\n{'='*80}")
-        print("📊 MODEL EVALUATION ON TEST DATA")
-        print(f"{'='*80}")
-        
-        for model_name, model in self.models.items():
-            # Make predictions
-            y_pred = model.predict(X_test)
-            
-            # Calculate metrics
-            accuracy = accuracy_score(y_test, y_pred)
-            precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
-            recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
-            f1 = f1_score(y_test, y_pred, average='weighted', zero_division=0)
-            
-            # Store results
-            self.results[model_name] = {
-                'accuracy': accuracy,
-                'precision': precision,
-                'recall': recall,
-                'f1': f1,
-                'predictions': y_pred
-            }
-            
-            # Display results
-            print(f"\n{model_name}:")
-            print(f"  Accuracy:  {accuracy:.4f} ({accuracy*100:.2f}%)")
-            print(f"  Precision: {precision:.4f}")
-            print(f"  Recall:    {recall:.4f}")
-            print(f"  F1-Score:  {f1:.4f}")
-    
-    
-    def compare_models(self):
-        """
-        Display comparison of all models in a table format.
-        """
-        print(f"\n{'='*80}")
-        print("📈 MODEL COMPARISON SUMMARY")
-        print(f"{'='*80}\n")
-        
-        # Create comparison dataframe
-        comparison_df = pd.DataFrame(self.results).T[['accuracy', 'precision', 'recall', 'f1']]
-        comparison_df.columns = ['Accuracy', 'Precision', 'Recall', 'F1-Score']
-        
-        print(comparison_df.round(4).to_string())
-        
-        # Find best model
-        best_model_name = comparison_df['Accuracy'].idxmax()
-        best_accuracy = comparison_df.loc[best_model_name, 'Accuracy']
-        
-        print(f"\n🏆 Best Model: {best_model_name}")
-        print(f"   Accuracy: {best_accuracy:.4f} ({best_accuracy*100:.2f}%)")
-        
-        return best_model_name
-    
-    
     def save_models(self):
         """
         Save all trained models to disk using pickle.
         
-        These models can be loaded later for making predictions on new data.
+        These models can be loaded later by evaluate.py and predict.py
+        for evaluation and making predictions on new data.
         """
         print(f"\n{'='*80}")
         print("💾 SAVING TRAINED MODELS")
@@ -258,48 +190,17 @@ class IntrusionDetectionTrainer:
             print(f"✓ Saved: {model_name}")
             print(f"  Location: {filepath}")
     
-    
-    def show_detailed_results(self, X_test, y_test):
-        """
-        Show detailed classification report for the best model.
-        
-        Args:
-            X_test (array): Test features
-            y_test (array): Test labels
-        """
-        print(f"\n{'='*80}")
-        print("🔍 DETAILED RESULTS FOR BEST MODEL")
-        print(f"{'='*80}\n")
-        
-        # Find best model
-        best_model_name = max(self.results, key=lambda x: self.results[x]['accuracy'])
-        best_model = self.models[best_model_name]
-        y_pred = best_model.predict(X_test)
-        
-        print(f"Model: {best_model_name}\n")
-        
-        # Classification Report
-        print("Classification Report:")
-        print("-" * 80)
-        print(classification_report(y_test, y_pred, 
-                                   target_names=['Benign', 'DDoS', 'DoS', 'Probe', 'R2L', 'U2R'],
-                                   zero_division=0))
-        
-        # Confusion Matrix
-        print("\nConfusion Matrix:")
-        print("-" * 80)
-        cm = confusion_matrix(y_test, y_pred)
-        print(cm)
-        print("\n(Rows: Actual, Columns: Predicted)")
 
 
 def main():
     """
-    Main function to execute the complete training pipeline.
+    Main function to execute the TRAINING ONLY pipeline.
+    
+    NOTE: Model evaluation is handled separately in evaluate.py
     """
     print("\n")
     print("╔" + "="*78 + "╗")
-    print("║" + " "*20 + "MODEL TRAINING PIPELINE" + " "*37 + "║")
+    print("║" + " "*15 + "MODEL TRAINING PIPELINE (Training Only)" + " "*25 + "║")
     print("╚" + "="*78 + "╝\n")
     
     # Initialize trainer
@@ -312,20 +213,11 @@ def main():
         print("="*80)
         X, y = trainer.load_data("friday")  # Using friday.csv as example
         
-        # Split data
+        # Split data - we need test data for evaluation later
         X_train, X_test, y_train, y_test = trainer.split_data(X, y)
         
         # Train models
         trainer.train_models(X_train, y_train)
-        
-        # Evaluate models
-        trainer.evaluate_models(X_test, y_test)
-        
-        # Compare and display results
-        best_model = trainer.compare_models()
-        
-        # Show detailed results
-        trainer.show_detailed_results(X_test, y_test)
         
         # Save models
         trainer.save_models()
@@ -334,9 +226,9 @@ def main():
         print("✅ TRAINING COMPLETE!")
         print("="*80)
         print(f"\n📌 Next Steps:")
-        print(f"   1. Models saved in: ../models/")
-        print(f"   2. Use 'predict.py' to make predictions on new data")
-        print(f"   3. Best model: {best_model}")
+        print(f"   1. ✓ Models trained and saved in: ../models/")
+        print(f"   2. → Evaluate models: python3 evaluate.py")
+        print(f"   3. → Make predictions: python3 predict.py")
         print()
     
     except FileNotFoundError as e:
@@ -348,7 +240,9 @@ def main():
         print(f"   python3 data_preprocessing.py")
         print(f"\n2️⃣ Then, train the models:")
         print(f"   python3 train.py")
-        print(f"\n3️⃣ Or, see a demo with sample data:")
+        print(f"\n3️⃣ Then, evaluate the models:")
+        print(f"   python3 evaluate.py")
+        print(f"\n4️⃣ Or, see a demo with sample data:")
         print(f"   python3 demo_train.py")
         print()
     
